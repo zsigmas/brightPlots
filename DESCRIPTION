@@ -2,9 +2,9 @@ Package: brightPlots
 Title: Interactive plots for bioinformatics datasets
 Version: 0.0.0.9000
 Authors@R: 
-    person("Luis", "Morís Fernández", "luis.moris.fernandez@gmail.com", role = c("aut", "cre"))
+    person(given = "Luis", family = "Moris Fernandez", email = "luis.moris.fernandez@gmail.com", role = c("aut", "cre"))
 Description: This package contains interactive visualizations for several types of
-bioinformatics datasets.
+    bioinformatics datasets.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -12,3 +12,13 @@ RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Imports: 
+    bslib,
+    dplyr,
+    magrittr,
+    purrr,
+    shiny,
+    vegawidget
+Depends: 
+    R (>= 2.10)
+LazyData: true
