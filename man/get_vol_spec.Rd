@@ -5,7 +5,7 @@
 \title{Reformat volcano dataset for plotting
 Expects as input the output of maUEB::dea_toptable1()}
 \usage{
-get_vol_spec(dataset, y = "adj_p", threshold = rnorm(1))
+get_vol_spec(dataset, y = "adj_p", threshold = stats::rnorm(1))
 }
 \arguments{
 \item{dataset}{a dataset from format_vol_vd}

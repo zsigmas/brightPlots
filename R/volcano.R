@@ -39,7 +39,7 @@ format_vol_data <- function(dataset_list, log_fc_col = "logFC", unadj_p_col = "P
 #'
 #' @export
 # The threshold value is random to force vegawidget to interpret it as a signal
-get_vol_spec <- function(dataset, y = "adj_p", threshold = rnorm(1)) {
+get_vol_spec <- function(dataset, y = "adj_p", threshold = stats::rnorm(1)) {
     dataset <- dplyr::mutate(dataset, y = .data[[y]])
     encoding <- list(
         x = list(
@@ -186,7 +186,7 @@ volcano_server <- function(id, dataset) {
         facets_db <- shiny::reactive(input[["facets"]]) %>%
             shiny::debounce(500)
 
-        click <- vegawidget::vw_shiny_get_event(ns("chart"), event = "mouseover", body_value = "datum")
+        click <- vegawidget::vw_shiny_get_event(ns("chart"), event = "click", body_value = "datum")
         vegawidget::vw_shiny_set_signal(ns("chart"), name = "p_val", value = p_val_db())
 
 
@@ -202,6 +202,7 @@ volcano_server <- function(id, dataset) {
     shiny::moduleServer(id, mod)
 }
 
+#' @export
 mock_volcano <- function(dataset) {
     if (missing(dataset)) {
         dataset <- format_vol_data(toptable)

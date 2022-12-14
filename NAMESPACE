@@ -3,6 +3,7 @@
 export("%>%")
 export(format_vol_data)
 export(get_vol_spec)
+export(mock_volcano)
 export(volcano_UI)
 export(volcano_server)
 importFrom(magrittr,"%>%")
