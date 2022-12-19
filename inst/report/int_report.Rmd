@@ -1,0 +1,25 @@
+---
+title: "Helloaa"
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+---
+
+```{r}
+# devtools::load_all("/home/zsigmas/UOC/brightPlots")###
+# vd <- brightPlots::format_vol_data(targets::tar_read(toptable_BH))
+message("Loading")
+
+message("Loading F")
+
+
+brightPlots::menu_UI("menu", unique(x[["facet"]]))
+sel<-callModule(brightPlots:::menu_server_, "menu", db_time=500)
+
+shiny::observe({    
+            purrr::iwalk(sel, ~rlang::inform(paste(.y, .x())))
+        })
+x <- brightPlots::menu_UI("menu", unique(x[["facet"]]))
+
+
+```

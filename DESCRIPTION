@@ -14,10 +14,12 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     bslib,
+    checkmate,
     dplyr,
     magrittr,
     purrr,
     shiny,
+    upsetjs,
     vegawidget
 Depends: 
     R (>= 2.10)

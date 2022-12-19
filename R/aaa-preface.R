@@ -1,5 +1,5 @@
-`$.cnt` <- function(x, y) {
-    stopifnot(y %in% names(x))
+`$.cnt` <- function(x, y) {    
+    checkmate::assertNames(y, type = "unique", subset.of = names(x), .var.name = as.character(substitute(x)))
     NextMethod()
 }
 
