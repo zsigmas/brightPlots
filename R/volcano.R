@@ -1,13 +1,11 @@
 VOL_ID <- poc(
     CHART = "chart",
-    TEXT = "text"
-)
-
-SIGNALS <- poc(
-    B_VAL = "B_val"
+    HOVERED = "hovered",
+    TABLE = "table"
 )
 
 #' Reformat volcano dataset for plotting
+#'
 #' Expects as input the output of maUEB::dea_toptable1()
 #'
 #' @param dataset_list A named list of datasets where each entry contains the result of the comparison and is named after it.
@@ -37,89 +35,14 @@ format_vol_data <- function(dataset_list, log_fc_col = "logFC", unadj_p_col = "P
     dataset
 }
 
-#' Reformat volcano dataset for plotting
-#' Expects as input the output of maUEB::dea_toptable1()
-#'
-#' @param dataset a dataset from format_vol_vd
-#' @param y the name of the column to use for y values
-#' @param threshold value for the y axis thresholding. If used in a shiny app use the default value
-#'
-#' @export
-# The threshold value is random to force vegawidget to interpret it as a signal
-get_vol_spec <- function(dataset, y = "adj_p", threshold = 0) {
-    dataset <- dplyr::mutate(dataset, y = .data[[y]])
-    encoding <- list(
-        x = list(
-            field = "log_fc",
-            type = "quantitative",
-            title = attr(dataset[["log_fc"]], "label") %||% "log_fc"
-        ),
-        y = list(
-            field = "y",
-            title = attr(dataset[["y"]], "label") %||% y,
-            type = "quantitative"
-        ),
-        color = list(
-            condition = list(
-                test = paste0("datum.y>", SIGNALS$B_VAL),
-                value = "red"
-            ),
-            value = "grey"
-        )
-        # ,
-        # opacity = list(
-        #     condition = list(
-        #         test = "datum.Probe == highlight.Probe",
-        #         empty = FALSE,
-        #         value = 1
-        #     ),
-        #     value = .2
-        # )
-    )
-
-    layer <- list(
-        # list(mark = list(type = "line")),
-        list(mark = list(type = "point", tooltip = list(
-            "content" = "data"
-        )))
-    )
-
-    spec <- list(
-        `$schema` = vegawidget::vega_schema(), # specifies Vega-Lite
-        usermeta = list(embedOptions = vegawidget::vega_embed(renderer = "canvas", actions = list(editor = TRUE))),
-        description = "Volcano Plot",
-        data = list(values = dataset),
-        params = list(
-            list(name = SIGNALS$B_VAL, value = 0), # set different to input to force signal
-            list(name = "highlight", select = list(type = "point", on = "mouseover"))
-        ),
-        columns = 2
-    )
-
-    spec[["facet"]] <- list(field = "facet")
-    spec[["columns"]] <- 2
-
-    spec[["spec"]] <- list(
-        encoding = encoding,
-        layer = layer,
-        width = 150,
-        height = 150
-    )
-
-    # spec[["facet"]] <- list(
-    #     column = list(field = "facet", title = "Comparison")
-    # )
-
-    vegawidget::as_vegaspec(spec)
-}
-
 #' @export
 volcano_UI <- function(id, as_tag_list = TRUE) {
     ns <- shiny::NS(id)
 
     ui <- list(
-        chart = vegawidget::vegawidgetOutput(ns(VOL_ID$CHART), width = "auto"),
-        text = shiny::textOutput(ns(VOL_ID$TEXT))
+        chart = shiny::plotOutput(ns(VOL_ID$CHART), click = ns("plot_click"), hover = shiny::hoverOpts(id = ns("plot_hover"), nullOutside = TRUE, delay = 100), width = "100%"),
+        hovered = shiny::uiOutput(ns(VOL_ID$HOVERED)),
+        table = gt::gt_output(ns(VOL_ID$TABLE))
     )
     if (as_tag_list) {
         shiny::tagList(ui)
@@ -129,11 +52,9 @@ volcano_UI <- function(id, as_tag_list = TRUE) {
 }
 
 #' @export
-volcano_server <- function(id, dataset, p, adj_p, comp) {
+volcano_server <- function(id, dataset, p, adj_p, comp, b_range) {
     mod <- function(input, output, session) {
         ns <- session[["ns"]]
-
-        click <- shiny::reactiveVal(NULL)
 
         b_val <- shiny::reactive(
             {
@@ -146,22 +67,77 @@ volcano_server <- function(id, dataset, p, adj_p, comp) {
                 p()
             )
 
-        click <- vegawidget::vw_shiny_get_event(ns(VOL_ID$CHART), event = "click", body_value = "datum")
-        vegawidget::vw_shiny_set_signal(ns(VOL_ID$CHART), name = SIGNALS$B_VAL, value = b_val())
-
-        output[[VOL_ID$CHART]] <- vegawidget::renderVegawidget({            
+        d <- shiny::reactive({
             y_col <- if (adj_p()) "mlog10_adj_p" else "mlog10_unadj_p"
-            dplyr::filter(dataset, .data[["facet"]] %in% comp()) %>%
-                get_vol_spec(y = y_col, threshold = 0)
-        }) %>% shiny::bindEvent(
-            adj_p(),
-            comp()
+            d <- dplyr::mutate(dataset, y = .data[[y_col]])
+            dplyr::filter(
+                d,
+                .data[["facet"]] %in% comp()
+            )
+        })
+
+        output[[VOL_ID$CHART]] <- shiny::renderPlot(
+            {
+                c_d <- d() %>%
+                    dplyr::mutate(
+                        Sig = dplyr::if_else(
+                            (.data[["y"]] >= b_val()) &
+                                (b_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > b_range()[["gt"]]),
+                            "Yes", "No"
+                        ),
+                        alpha = dplyr::if_else(
+                            (.data[["y"]] >= b_val()) &
+                                (b_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > b_range()[["gt"]]),
+                            1, .2
+                        )
+                    )
+                
+                ggplot2::ggplot(c_d, mapping = ggplot2::aes(x = .data[["log_fc"]], y = .data[["y"]], colour = .data[["Sig"]], alpha = .data[["alpha"]])) +
+                    ggplot2::geom_point(size = 3) +
+                    ggplot2::facet_wrap(~facet, ncol = 3) +
+                    ggthemes::theme_tufte(base_size = 20) +
+                    ggplot2::theme(panel.background = ggplot2::element_rect(fill = NA, color = "black"), legend.position = "None") +
+                    ggplot2::labs(y = attr(d()[["y"]], "label") %||% "y", x = attr(d()[["log_fc"]], "label") %||% "x") +
+                    ggplot2::theme(aspect.ratio = 1)
+            },
+            execOnResize = TRUE
+        ) %>% shiny::bindEvent(
+            d(),
+            b_val(),
+            b_range()
         )
 
-        output[[VOL_ID$TEXT]] <- shiny::renderText({
-            click()[["facet"]]
+        hovered <- shiny::reactive({
+            np <- shiny::nearPoints(d(), input[["plot_hover"]], xvar = "log_fc", yvar = "y", threshold = 10)
+            shiny::validate(
+                shiny::need(nrow(np) > 0, "Hover over a point. Click on it to lock.")
+            )
+            np[1, ]
         })
+
+        clicked <- shiny::reactive({
+            np <- shiny::nearPoints(d(), input[["plot_click"]], xvar = "log_fc", yvar = "y", threshold = 10)
+            shiny::validate(
+                shiny::need(nrow(np) > 0, "Hover over a point. Click on it to lock.")
+            )
+            np[1, ]
+        })
+
+        output[[VOL_ID$HOVERED]] <- shiny::renderText({
+            hovered()[["facet"]]
+        })
+
+        output[["table"]] <- gt::render_gt({
+            np <- shiny::nearPoints(d(), input[["plot_hover"]], xvar = "log_fc", yvar = "y", threshold = 5)
+            shiny::validate(
+                shiny::need(nrow(np) > 0, "Hover over a point")
+            )
+            np
+        })
+
+        return(
+            list(hovered = hovered, clicked = clicked)
+        )
     }
     shiny::moduleServer(id, mod)
 }
-

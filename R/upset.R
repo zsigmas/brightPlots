@@ -14,9 +14,9 @@ upset_UI <- function(id){
 upset_server <- function(id, dataset, p, adj_p, comp){
     mod <- function(input, output, session) {
         ns <- session[["ns"]]
-        output[[UPSET_ID$CHART]] <- upsetjs::renderUpsetjs({
-            shiny::req(adj_p())
-            y_col <- if (adj_p()) "adj_p" else "unadj_p"            
+        output[[UPSET_ID$CHART]] <- upsetjs::renderUpsetjs({            
+            shiny::req(!is.null(adj_p()))
+            y_col <- if (adj_p()) "adj_p" else "unadj_p"
             df <- dplyr::filter(
                 dataset,
                 .data[["facet"]] %in% comp(),
