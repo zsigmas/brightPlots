@@ -30,3 +30,4 @@ Imports:
 Depends: 
     R (>= 2.10)
 LazyData: true
+URL: https://zsigmas.github.io/brightPlots/, https://github.com/zsigmas/brightPlots

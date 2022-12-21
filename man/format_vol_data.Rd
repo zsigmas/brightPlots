@@ -13,7 +13,7 @@ format_vol_data(
 )
 }
 \arguments{
-\item{dataset_list}{A named list of datasets where each entry contains the result of the comparison and is named after it.}
+\item{dataset_list}{A named list of datasets as output by maUEB::dea_toptable1()}
 
 \item{log_fc_col}{The name of the column that contains the log fold value}
 
@@ -24,5 +24,5 @@ format_vol_data(
 \item{tooltip_cols}{A character vector indicating which fields will be included in addition to the previous columns, normally used as tooltips in the graph}
 }
 \description{
-Expects as input the output of maUEB::dea_toptable1()
+Reformat volcano dataset for plotting
 }

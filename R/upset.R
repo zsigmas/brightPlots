@@ -1,6 +1,6 @@
 # # Uses upsetjs
 UPSET_ID <- poc(
-    CHART = "CHART"
+  CHART = "CHART"
 )
 
 #' Upset module
@@ -16,8 +16,8 @@ NULL
 #'
 #' @export
 upset_UI <- function(id) {
-    ns <- shiny::NS(id)
-    upsetjs::upsetjsOutput(outputId = ns(UPSET_ID$CHART))
+  ns <- shiny::NS(id)
+  upsetjs::upsetjsOutput(outputId = ns(UPSET_ID$CHART))
 }
 
 #' @describeIn upset_module server
@@ -30,40 +30,40 @@ upset_UI <- function(id) {
 #'
 #' @export
 upset_server <- function(id, dataset, p, adj_p, comp, log_fc_range) {
-    mod <- function(input, output, session) {
-        ns <- session[["ns"]]
-        output[[UPSET_ID$CHART]] <- upsetjs::renderUpsetjs({
-            shiny::req(!is.null(adj_p()))
-            y_col <- if (adj_p()) "adj_p" else "unadj_p"
-            df <- dplyr::filter(
-                dataset,
-                .data[["facet"]] %in% comp(),
-                .data[[y_col]] < p(),
-                log_fc_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > log_fc_range()[["gt"]]
-            ) %>%
-                dplyr::select(
-                    .data[["Probe"]],
-                    .data[["facet"]]
-                ) %>%
-                dplyr::group_by(.data[["facet"]]) %>%
-                dplyr::summarise(set = list(.data[["Probe"]])) %>%
-                as.list()
+  mod <- function(input, output, session) {
+    ns <- session[["ns"]]
+    output[[UPSET_ID$CHART]] <- upsetjs::renderUpsetjs({
+      shiny::req(!is.null(adj_p()))
+      y_col <- if (adj_p()) "adj_p" else "unadj_p"
+      df <- dplyr::filter(
+        dataset,
+        .data[["facet"]] %in% comp(),
+        .data[[y_col]] < p(),
+        log_fc_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > log_fc_range()[["gt"]]
+      ) %>%
+        dplyr::select(
+          .data[["Probe"]],
+          .data[["facet"]]
+        ) %>%
+        dplyr::group_by(.data[["facet"]]) %>%
+        dplyr::summarise(set = list(.data[["Probe"]])) %>%
+        as.list()
 
-            set_list <- purrr::list_merge(
-                stats::setNames(vector("list", length(comp())), comp()),
-                !!!stats::setNames(df[["set"]], df[["facet"]])
-            )
+      set_list <- purrr::list_merge(
+        stats::setNames(vector("list", length(comp())), comp()),
+        !!!stats::setNames(df[["set"]], df[["facet"]])
+      )
 
-            upsetjs::upsetjs() %>%
-                upsetjs::fromList(set_list) %>%
-                upsetjs::interactiveChart()
-        }) %>%
-            shiny::bindEvent(
-                p(),
-                adj_p(),
-                comp(),
-                log_fc_range()
-            )
-    }
-    shiny::moduleServer(id, mod)
+      upsetjs::upsetjs() %>%
+        upsetjs::fromList(set_list) %>%
+        upsetjs::interactiveChart()
+    }) %>%
+      shiny::bindEvent(
+        p(),
+        adj_p(),
+        comp(),
+        log_fc_range()
+      )
+  }
+  shiny::moduleServer(id, mod)
 }

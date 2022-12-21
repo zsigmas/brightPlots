@@ -52,7 +52,7 @@ menu_UI <- function(id, comparisons) {
 #' @param id Shiny id
 #' @param db_time debounce time for the inputs
 #'
-#' @value A list with the following entries:
+#' @return A list with the following entries:
 #'  - p: reactive numerical with the limit p value
 #'  - adj: reactive logical indicating unadjusted or adjusted p value
 #'  - comp: reactive character vector indicating the selected comparisons
