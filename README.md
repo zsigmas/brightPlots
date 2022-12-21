@@ -1,7 +1,7 @@
 
 # brightPlots
 
-![alt text here](man/figures/demo.png)
+![](man/figures/demo.png)
 
 brightPlots is a package under development that contains a Shiny app to
 visualize the experimental results, usually from significance analisys

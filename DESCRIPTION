@@ -2,7 +2,7 @@ Package: brightPlots
 Title: Interactive plots for bioinformatics datasets
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Luis", family = "Moris Fernandez", email = "luis.moris.fernandez@gmail.com", role = c("aut", "cre"))
+    person(given = "Luis", family = "Morís Fernández", email = "luis.moris.fernandez@gmail.com", role = c("aut", "cre"))
 Description: This package contains interactive visualizations for several types of
     bioinformatics datasets.
 License: GPL (>= 3)
