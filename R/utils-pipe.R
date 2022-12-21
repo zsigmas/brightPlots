@@ -12,3 +12,11 @@
 #' @param rhs A function call using the magrittr semantics.
 #' @return The result of calling `rhs(lhs)`.
 NULL
+
+#' .data object from dplyr
+#'
+#' @name .data
+#' @rdname dplyr_.data
+#' @keywords internal
+#' @importFrom dplyr .data
+NULL

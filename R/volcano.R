@@ -41,8 +41,7 @@ volcano_UI <- function(id, as_tag_list = TRUE) {
 
     ui <- list(
         chart = shiny::plotOutput(ns(VOL_ID$CHART), click = ns("plot_click"), hover = shiny::hoverOpts(id = ns("plot_hover"), nullOutside = TRUE, delay = 100), width = "100%"),
-        hovered = shiny::uiOutput(ns(VOL_ID$HOVERED)),
-        table = gt::gt_output(ns(VOL_ID$TABLE))
+        hovered = shiny::uiOutput(ns(VOL_ID$HOVERED))
     )
     if (as_tag_list) {
         shiny::tagList(ui)
@@ -52,7 +51,7 @@ volcano_UI <- function(id, as_tag_list = TRUE) {
 }
 
 #' @export
-volcano_server <- function(id, dataset, p, adj_p, comp, b_range) {
+volcano_server <- function(id, dataset, p, adj_p, comp, log_fc_range) {
     mod <- function(input, output, session) {
         ns <- session[["ns"]]
 
@@ -76,50 +75,68 @@ volcano_server <- function(id, dataset, p, adj_p, comp, b_range) {
             )
         })
 
+        selected <- shiny::reactive({             
+                    dplyr::filter(d(),
+                        .data[["y"]] >= b_val(),
+                    log_fc_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > log_fc_range()[["gt"]]
+                    )            
+        })
+
         output[[VOL_ID$CHART]] <- shiny::renderPlot(
-            {
+            {                
                 c_d <- d() %>%
                     dplyr::mutate(
                         Sig = dplyr::if_else(
                             (.data[["y"]] >= b_val()) &
-                                (b_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > b_range()[["gt"]]),
+                                (log_fc_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > log_fc_range()[["gt"]]),
                             "Yes", "No"
                         ),
                         alpha = dplyr::if_else(
                             (.data[["y"]] >= b_val()) &
-                                (b_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > b_range()[["gt"]]),
+                                (log_fc_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > log_fc_range()[["gt"]]),
                             1, .2
                         )
                     )
-                
-                ggplot2::ggplot(c_d, mapping = ggplot2::aes(x = .data[["log_fc"]], y = .data[["y"]], colour = .data[["Sig"]], alpha = .data[["alpha"]])) +
+
+                p <- ggplot2::ggplot(c_d, mapping = ggplot2::aes(x = .data[["log_fc"]], y = .data[["y"]], colour = .data[["Sig"]], alpha = .data[["alpha"]])) +
                     ggplot2::geom_point(size = 3) +
                     ggplot2::facet_wrap(~facet, ncol = 3) +
                     ggthemes::theme_tufte(base_size = 20) +
                     ggplot2::theme(panel.background = ggplot2::element_rect(fill = NA, color = "black"), legend.position = "None") +
                     ggplot2::labs(y = attr(d()[["y"]], "label") %||% "y", x = attr(d()[["log_fc"]], "label") %||% "x") +
                     ggplot2::theme(aspect.ratio = 1)
-            },
-            execOnResize = TRUE
+
+                # Draw reference lines
+
+                if (isTRUE(is.numeric(log_fc_range()[["gt"]]))) {
+                    p <- p + ggplot2::geom_vline(xintercept = log_fc_range()[["gt"]], linetype = 2)
+                }
+
+                if (isTRUE(is.numeric(log_fc_range()[["lt"]]))) {
+                    p <- p + ggplot2::geom_vline(xintercept = log_fc_range()[["lt"]], linetype = 2)
+                }
+
+                if (isTRUE(is.numeric(b_val()))) {
+                    p <- p + ggplot2::geom_hline(yintercept = b_val(), linetype = 2)
+                }
+
+                # Return the csv
+
+                # Return a box with selected values
+
+                p
+            }
         ) %>% shiny::bindEvent(
             d(),
             b_val(),
-            b_range()
+            log_fc_range()
         )
 
         hovered <- shiny::reactive({
             np <- shiny::nearPoints(d(), input[["plot_hover"]], xvar = "log_fc", yvar = "y", threshold = 10)
             shiny::validate(
                 shiny::need(nrow(np) > 0, "Hover over a point. Click on it to lock.")
-            )
-            np[1, ]
-        })
-
-        clicked <- shiny::reactive({
-            np <- shiny::nearPoints(d(), input[["plot_click"]], xvar = "log_fc", yvar = "y", threshold = 10)
-            shiny::validate(
-                shiny::need(nrow(np) > 0, "Hover over a point. Click on it to lock.")
-            )
+            )            
             np[1, ]
         })
 
@@ -127,16 +144,8 @@ volcano_server <- function(id, dataset, p, adj_p, comp, b_range) {
             hovered()[["facet"]]
         })
 
-        output[["table"]] <- gt::render_gt({
-            np <- shiny::nearPoints(d(), input[["plot_hover"]], xvar = "log_fc", yvar = "y", threshold = 5)
-            shiny::validate(
-                shiny::need(nrow(np) > 0, "Hover over a point")
-            )
-            np
-        })
-
         return(
-            list(hovered = hovered, clicked = clicked)
+            list(hovered = hovered, selected = selected)
         )
     }
     shiny::moduleServer(id, mod)

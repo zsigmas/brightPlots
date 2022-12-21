@@ -2,8 +2,7 @@
 % Please edit documentation in R/volcano.R
 \name{format_vol_data}
 \alias{format_vol_data}
-\title{Reformat volcano dataset for plotting
-Expects as input the output of maUEB::dea_toptable1()}
+\title{Reformat volcano dataset for plotting}
 \usage{
 format_vol_data(
   dataset_list,
@@ -25,6 +24,5 @@ format_vol_data(
 \item{tooltip_cols}{A character vector indicating which fields will be included in addition to the previous columns, normally used as tooltips in the graph}
 }
 \description{
-Reformat volcano dataset for plotting
 Expects as input the output of maUEB::dea_toptable1()
 }

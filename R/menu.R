@@ -15,14 +15,14 @@ menu_UI <- function(id, comparisons, as_tag_list = TRUE) {
         adj = shinyWidgets::pickerInput(
             inputId = ns(MENU_ID$ADJ_P), label = NULL, choices = c(Adjusted = "adjust", Unadjusted = "unadj"), width = "100%"
         ),
-        p_val = shiny::numericInput(ns(MENU_ID$P), label = NULL, min = 0.01, max = 1, step = .01, value = .05, width = "100%")
+        p_val = shiny::numericInput(ns(MENU_ID$P), label = NULL, min = 0.01, max = 1, step = .01, value = .05, width = "5rem")
     )
 
     b <- list(
-        gt_enab = shiny::checkboxInput(ns(MENU_ID$GT_ENAB), label = shiny::tags[["span"]](">", class = "fs-3"), width = "40px"),
-        lt_enab = shiny::checkboxInput(ns(MENU_ID$LT_ENAB), label = shiny::tags[["span"]]("<", class = "fs-3"), width = "40px"),
-        gt = shiny::numericInput(ns(MENU_ID$GT), label = NULL, min = NA, max = NA, step = .01, value = 0, width = "150px"),
-        lt = shiny::numericInput(ns(MENU_ID$LT), label = NULL, min = NA, max = NA, step = .01, value = 0, width = "150px")
+        gt_enab = shiny::checkboxInput(ns(MENU_ID$GT_ENAB), label = shiny::tags[["span"]]("FC >", class = "fs-5"), width = "4rem"),
+        lt_enab = shiny::checkboxInput(ns(MENU_ID$LT_ENAB), label = shiny::tags[["span"]]("FC <", class = "fs-5"), width = "4rem"),
+        gt = shiny::numericInput(ns(MENU_ID$GT), label = NULL, min = NA, max = NA, step = .01, value = 0, width = "6rem"),
+        lt = shiny::numericInput(ns(MENU_ID$LT), label = NULL, min = NA, max = NA, step = .01, value = 0, width = "6rem")
     )
 
     comp <- list(
@@ -60,7 +60,7 @@ menu_server <- function(id, db_time = 500) {
                 },
                 label = ns(" comp")
             ),
-            b_range = shiny::reactive(
+            log_fc_range = shiny::reactive(
                 {
                     gt_act <- input[[MENU_ID$GT_ENAB]]
                     lt_act <- input[[MENU_ID$LT_ENAB]]
@@ -72,11 +72,11 @@ menu_server <- function(id, db_time = 500) {
                         return(list(gt = Inf, lt = input[[MENU_ID$LT]]))
                     }
                     if (lt_act && gt_act) {
-                        return(list(gt = input[[MENU_ID$LT]], lt = input[[MENU_ID$GT]]))
+                        return(list(gt = input[[MENU_ID$GT]], lt = input[[MENU_ID$LT]]))
                     }
                     return(list(gt = -Inf, lt = Inf))
                 },
-                label = ns(" b_range")
+                label = ns(" log_fc_range")
             )
         ) %>%
             purrr::map(~ .x %>% shiny::debounce(db_time))

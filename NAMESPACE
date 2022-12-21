@@ -2,7 +2,6 @@
 
 export("%>%")
 export(format_vol_data)
-export(get_vol_spec)
 export(menu_UI)
 export(menu_server)
 export(mock_app)
@@ -10,4 +9,5 @@ export(upset_UI)
 export(upset_server)
 export(volcano_UI)
 export(volcano_server)
+importFrom(dplyr,.data)
 importFrom(magrittr,"%>%")

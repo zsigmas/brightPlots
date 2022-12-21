@@ -16,11 +16,17 @@ Imports:
     bslib,
     checkmate,
     dplyr,
+    ggplot2,
+    ggthemes,
     magrittr,
     purrr,
+    rlang,
     shiny,
     upsetjs,
-    vegawidget
+    utils,
+    htmltools,
+    shinyWidgets,
+    tibble    
 Depends: 
     R (>= 2.10)
 LazyData: true
