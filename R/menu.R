@@ -7,8 +7,20 @@ MENU_ID <- poc(
     GT_ENAB = "gt_enab",
     LT_ENAB = "lt_enab"
 )
+
+#' Menu module
+#'
+#' Provides inputs for the app
+#'
+#' @name menu_module
+NULL
+
+#' @describeIn menu_module UI
+#' @param id Shiny id
+#' @param comparisons a character vector with the comparisons in the dataset
+#'
 #' @export
-menu_UI <- function(id, comparisons, as_tag_list = TRUE) {
+menu_UI <- function(id, comparisons) {
     ns <- shiny::NS(id)
 
     alpha <- list(
@@ -36,6 +48,16 @@ menu_UI <- function(id, comparisons, as_tag_list = TRUE) {
     )
 }
 
+#' @describeIn menu_module UI
+#' @param id Shiny id
+#' @param db_time debounce time for the inputs
+#'
+#' @value A list with the following entries:
+#'  - p: reactive numerical with the limit p value
+#'  - adj: reactive logical indicating unadjusted or adjusted p value
+#'  - comp: reactive character vector indicating the selected comparisons
+#'  - log_fc_range: a reactive numerical vector with two entries `gt` and `lt`. When their corresponding checks are disabled they return `-Inf` and `Inf` respectively.
+#'
 #' @export
 
 menu_server <- function(id, db_time = 500) {

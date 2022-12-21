@@ -1,12 +1,20 @@
+
+#' Volcano and upset app
+#' 
+#' Runs a Shiny app for gene upsetting results exploration.
+#'  
+#' @param dataset A named list of datasets as output by maUEB::dea_toptable1()
 #' @export
-mock_app <- function(dataset) {
+app <- function(dataset) {
     if (missing(dataset)) {
-        dataset <- format_vol_data(brightPlots::toptable)
+        dataset <- brightPlots::toptable
     }
+
+    dataset <- format_vol_data(dataset)
 
     ui <- function(req) {
         menu_elements <- menu_UI("menu", unique(dataset[["facet"]]), as_tag_list = FALSE)
-        volcano_elements <- volcano_UI("volcano", as_tag_list = FALSE)
+        volcano_elements <- volcano_UI("volcano")
 
         alpha_column <-
             shiny::div(
@@ -164,8 +172,7 @@ mock_app <- function(dataset) {
             )
         )
     }
-
-    # )
+    
     server <- function(input, output, session) {
         sel <- menu_server("menu")
 
@@ -276,7 +283,7 @@ mock_app <- function(dataset) {
             }
         )
 
-        upset_server("upset", dataset, p = sel[["p"]], adj_p = sel[["adj"]], comp = sel[["comp"]])
+        upset_server("upset", dataset, p = sel[["p"]], adj_p = sel[["adj"]], comp = sel[["comp"]], log_fc_range = sel[["log_fc_range"]])
     }
 
     shiny::shinyApp(

@@ -2,16 +2,34 @@
 UPSET_ID <- poc(
     CHART = "CHART"
 )
-# listInput <- list(one = c(1, 2, 3, 5, 7, 8, 11, 12, 13), two = c(1, 2, 4, 5, 10), three = c(1, 5, 6, 7, 8, 9, 10, 12, 13))
-# upsetjs() %>% fromList(listInput) %>% interactiveChart()
-# upsetjs::ren
+
+#' Upset module
+#'
+#' Shows an upset chart
+#'
+#' @name upset_module
+NULL
+
+#' @describeIn upset_module UI
+#'
+#' @param id A Shiny ID
+#'
 #' @export
 upset_UI <- function(id) {
     ns <- shiny::NS(id)
     upsetjs::upsetjsOutput(outputId = ns(UPSET_ID$CHART))
 }
+
+#' @describeIn upset_module server
+#'
+#' @param id Shiny ID
+#' @param dataset Data as output by `format_vol_data`
+#' @param p A reactive numerical indicating the p value limit
+#' @param adj_p A reactive boolean indicating if adjusted p value should be used
+#' @param log_fc_range A reactive numerical vector with two entries `lt` and `gt` indicating the limits for the Log FC
+#'
 #' @export
-upset_server <- function(id, dataset, p, adj_p, comp) {
+upset_server <- function(id, dataset, p, adj_p, comp, log_fc_range) {
     mod <- function(input, output, session) {
         ns <- session[["ns"]]
         output[[UPSET_ID$CHART]] <- upsetjs::renderUpsetjs({
@@ -20,7 +38,8 @@ upset_server <- function(id, dataset, p, adj_p, comp) {
             df <- dplyr::filter(
                 dataset,
                 .data[["facet"]] %in% comp(),
-                .data[[y_col]] < p()
+                .data[[y_col]] < p(),
+                log_fc_range()[["lt"]] > .data[["log_fc"]] | .data[["log_fc"]] > log_fc_range()[["gt"]]
             ) %>%
                 dplyr::select(
                     .data[["Probe"]],
@@ -42,7 +61,8 @@ upset_server <- function(id, dataset, p, adj_p, comp) {
             shiny::bindEvent(
                 p(),
                 adj_p(),
-                comp()
+                comp(),
+                log_fc_range()
             )
     }
     shiny::moduleServer(id, mod)
