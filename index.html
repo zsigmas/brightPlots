@@ -62,6 +62,18 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="brightplots">brightPlots<a class="anchor" aria-label="anchor" href="#brightplots"></a>
 </h1></div>
+<div class="figure">
+<img src="reference/figures/demo.png" alt=""><p class="caption">alt text here</p>
+</div>
+<p>brightPlots is a package under development that contains a Shiny app to visualize the experimental results, usually from significance analisys of microarrays.</p>
+<p>The app is composed of several <a href="https://shiny.rstudio.com/articles/modules.html" class="external-link">Shiny modules</a> so they can be reused in different applications.</p>
+<p>To visualize a dataset, after installing the package:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">brightPlots</span><span class="fu">::</span><span class="fu"><a href="reference/app.html">app</a></span><span class="op">(</span><span class="va">my_dataset</span><span class="op">)</span></span></code></pre></div>
+<p>Usually <code>my_dataset</code> is the product of a <a href="https://github.com/uebvhir/maUEB" class="external-link">maUEB::toptable1</a>.</p>
+<p>The app can be called with no parameters and a demo application will run.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">brightPlots</span><span class="fu">::</span><span class="fu"><a href="reference/app.html">app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
