@@ -2,6 +2,7 @@
 
 export("%>%")
 export(app)
+export(app_upload)
 export(format_vol_data)
 export(menu_UI)
 export(menu_server)
